@@ -142,6 +142,21 @@ m("n", "K", vim.lsp.buf.hover, "顯示說明（簽章/型別）")
 m("n", "gs", vim.lsp.buf.signature_help, "函式參數提示")
 m("i", "<C-k>", vim.lsp.buf.signature_help, "函式參數提示")
 
+-- ── visual 模式也能直接按 gd / gr ─────────────────────────
+-- LSP 是用「游標位置」查的，不是用「選取的文字」。
+-- viw 之後游標停在單字內，所以離開 visual 再查就是正確的位置。
+local function lsp_from_visual(fn)
+  return function()
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "nx", false)
+    fn()
+  end
+end
+m("x", "gd", lsp_from_visual(vim.lsp.buf.definition), "跳到定義")
+m("x", "gD", lsp_from_visual(vim.lsp.buf.declaration), "跳到宣告")
+m("x", "gi", lsp_from_visual(vim.lsp.buf.implementation), "跳到實作")
+m("x", "gy", lsp_from_visual(vim.lsp.buf.type_definition), "跳到型別定義")
+m("x", "gr", lsp_from_visual(function() vim.cmd "Telescope lsp_references" end), "列出所有參考")
+
 m("n", "<leader>ls", "<cmd>Telescope lsp_document_symbols<cr>", "本檔 function/變數列表")
 m("n", "<leader>lS", "<cmd>Telescope lsp_dynamic_workspace_symbols<cr>", "全專案 symbol 列表")
 m("n", "<leader>li", "<cmd>Telescope lsp_incoming_calls<cr>", "誰呼叫了這個函式")
