@@ -70,7 +70,8 @@ opt.path:append { ".", "include", "inc", "src", "/usr/include", "**" }
 opt.suffixesadd:append { ".c", ".h", ".cc", ".cpp", ".hpp" }
 
 -- ctags：往上層目錄找 tags
-opt.tags = "./tags,tags,./.git/tags"
+-- 結尾的 ";" = 從檔案所在目錄一路往上層找，直到根目錄
+opt.tags = "./tags;,tags;,./.git/tags;"
 
 -- grep 預設走 ripgrep（:grep <pattern> 直接進 quickfix）
 if vim.fn.executable "rg" == 1 then
