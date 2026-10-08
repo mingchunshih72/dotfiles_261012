@@ -1,0 +1,23 @@
+[user]
+	name = chunshih
+	email = chun19940713@gmail.com
+[init]
+	defaultBranch = main
+[core]
+	editor = nvim
+	pager = less -FRX
+[color]
+	ui = auto
+[diff]
+	algorithm = histogram
+	colorMoved = default
+[pull]
+	rebase = false
+[alias]
+	st = status -sb
+	co = checkout
+	br = branch
+	ci = commit
+	lg = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) %C(dim white)%an%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''        %C(white)%s%C(reset)'
+	last = log -1 HEAD --stat
+	unstage = restore --staged

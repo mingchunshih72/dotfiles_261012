@@ -1,0 +1,53 @@
+# ════════════════════════════════════════════════════════════════
+#  ~/.tmux.conf.local  —  oh-my-tmux 的使用者覆寫檔
+#  （不要改 ~/.tmux.conf，所有自訂都寫在這裡）
+# ════════════════════════════════════════════════════════════════
+
+# ── 複製貼上 ────────────────────────────────────────────────────
+# 複製時同步進系統剪貼簿（WSL 需要 win32yank 或 clip.exe；見下方 copy_backend）
+tmux_conf_copy_to_os_clipboard=true
+
+# ── 新視窗/分割保留當前目錄 ─────────────────────────────────────
+tmux_conf_new_window_retain_current_path=true
+tmux_conf_new_pane_retain_current_path=true
+tmux_conf_new_session_prompt=false
+
+# ── 顏色 ────────────────────────────────────────────────────────
+tmux_conf_24b_colour=true
+
+# ── 其他 ────────────────────────────────────────────────────────
+tmux_conf_preserve_stock_bindings=false
+tmux_conf_theme_window_status_current_format=' #I #{?#{==:#{pane_current_path},#{HOME}},~,#{b:pane_current_path}} '
+
+# ── 自己的設定（會覆蓋 oh-my-tmux 的預設）──────────────────────
+set -g history-limit 50000
+set -g mouse on
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+set -sg escape-time 10
+set -g display-time 2000
+
+# vi 風格的 copy-mode
+setw -g mode-keys vi
+bind -T copy-mode-vi v send -X begin-selection
+bind -T copy-mode-vi y send -X copy-selection-and-cancel
+bind -T copy-mode-vi Escape send -X cancel
+
+# 用 | 和 - 分割（比 % 和 " 直覺）
+bind | split-window -h -c "#{pane_current_path}"
+bind - split-window -v -c "#{pane_current_path}"
+
+# Alt + 方向鍵切換 pane（不用按 prefix）
+bind -n M-Left  select-pane -L
+bind -n M-Right select-pane -R
+bind -n M-Up    select-pane -U
+bind -n M-Down  select-pane -D
+
+# prefix + r 重載設定
+bind r source-file ~/.tmux.conf \; display "tmux.conf reloaded"
+
+# 讓 nvim 的 <Esc> 不延遲、顏色正確
+set -g default-terminal "tmux-256color"
+set -ga terminal-overrides ",*256col*:Tc,xterm-256color:Tc"
+set -g focus-events on

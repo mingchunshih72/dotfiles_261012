@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# 在當前（或指定）目錄建立 cscope.out + tags + compile_commands.json
+set -uo pipefail
+root="${1:-.}"
+echo "▶ 收集原始碼清單 ..."
+find "$root" \( -path '*/.git' -o -path '*/build' -o -path '*/out' -o -path '*/node_modules' \) -prune -o \
+     -type f \( -name '*.c' -o -name '*.h' -o -name '*.cc' -o -name '*.cpp' \
+                -o -name '*.cxx' -o -name '*.hpp' -o -name '*.hh' -o -name '*.S' \) \
+     -print > cscope.files
+echo "  共 $(wc -l < cscope.files) 個檔案"
+if command -v cscope >/dev/null; then echo "▶ cscope.out"; cscope -bqkv -i cscope.files; else echo "  ⚠ 沒有 cscope"; fi
+if command -v ctags  >/dev/null; then echo "▶ tags";       ctags -R --c-kinds=+px --c++-kinds=+px --fields=+iaS --extras=+q -L cscope.files; else echo "  ⚠ 沒有 ctags"; fi
+if [ -f Makefile ] && command -v bear >/dev/null; then
+  echo "▶ compile_commands.json (bear -- make)"
+  make clean >/dev/null 2>&1
+  bear -- make >/dev/null 2>&1 && echo "  完成" || echo "  ⚠ bear -- make 失敗，手動跑看錯誤"
+fi
+echo "✔ 索引完成"

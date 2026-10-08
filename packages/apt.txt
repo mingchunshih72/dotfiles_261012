@@ -1,0 +1,72 @@
+# ════════════════════════════════════════════════════════════════
+#  apt 套件清單（install.sh 會讀這個檔，# 開頭為註解）
+# ════════════════════════════════════════════════════════════════
+
+# ── 基本工具 ──────────────────────────────────────────────────
+build-essential          # gcc / g++ / make / libc-dev
+git
+ssh
+openssh-client
+curl
+wget
+tar
+unzip
+zip
+xz-utils
+rsync
+tree
+htop
+less
+file
+locales
+ca-certificates
+gnupg
+software-properties-common
+pkg-config
+sudo
+
+# ── shell / 終端 ──────────────────────────────────────────────
+zsh
+tmux
+
+# ── C/C++ 開發 ────────────────────────────────────────────────
+gdb
+cmake
+ninja-build
+autoconf
+automake
+libtool
+bison
+flex
+gcc-multilib                # 編 32-bit 時需要
+clang
+clang-format
+clang-tidy
+clangd                      # LSP（mason 也會裝一份，系統這份當備援）
+bear                        # ★ 產生 compile_commands.json，clangd 跳轉的關鍵
+valgrind
+strace
+ltrace
+binutils
+device-tree-compiler        # 嵌入式常用；不需要可刪
+libncurses-dev              # make menuconfig 需要
+libssl-dev
+libelf-dev
+flex
+
+# ── 程式碼索引 / 搜尋（★ 這幾個是「搜尋/跳轉」能不能用的關鍵）──
+cscope                      # ★ 函式呼叫關係查詢
+universal-ctags             # ★ tag 跳轉 (<C-]>)
+ripgrep                     # ★ Telescope 全域搜尋 live_grep 靠它
+fd-find                     # 快速找檔案（指令名是 fdfind）
+fzf                         # 模糊搜尋
+silversearcher-ag           # 備用搜尋器
+
+# ── Neovim 相依 ───────────────────────────────────────────────
+python3
+python3-pip
+python3-venv
+luarocks
+nodejs                      # 若版本太舊，install.sh 會改用 nvm 裝
+npm
+shfmt                       # shell script 格式化（Ubuntu 24.04 有此套件）

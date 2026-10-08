@@ -1,0 +1,10 @@
+# 不要帶走的東西
+*.swp
+*.swo
+.DS_Store
+nvim/.git/
+# 機器專屬 / 敏感資訊
+.zshrc.local
+*credentials*
+*.pem
+id_rsa*
