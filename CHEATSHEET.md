@@ -34,8 +34,11 @@ nvim
 | 按鍵 | 功能 | 說明 |
 |---|---|---|
 | `<Space>fw` | 全專案即時搜尋 | 邊打邊找（live grep），右側即時預覽 |
-| `<Space>fW` | 全專案搜游標下的字 | normal 模式吃 `<cword>` |
-| `<Space>fW` | 全專案搜選取的文字 | **visual 模式** |
+| `<Space>fW` | 全專案搜游標下的字 | 關鍵字固定，少按幾下 |
+| `<Space>fw` | **visual**：搜選取的文字 | 關鍵字**預填好、還能繼續改** |
+| `<Space>fW` | **visual**：搜選取的文字 | 關鍵字固定不給改 |
+| `<Space>fz` | **visual**：本檔搜選取的文字 | |
+| `*` / `#` | **visual**：本檔搜選取的文字，往下／往上 | Neovim 內建 |
 | `<Space>fG` | grep → quickfix | 結果量很大時比 Telescope 好用 |
 | `:grep <pattern>` | 同上（手打） | 已設成走 ripgrep |
 | `<Space>lS` | 全專案 symbol 搜尋 | LSP 語意級，只找 function/變數名 |
@@ -105,13 +108,16 @@ nvim
 
 ### 2-1 LSP（clangd）— 語意精確，需要 `compile_commands.json`
 
-| 按鍵 | 功能 |
-|---|---|
-| `gd` | 跳到**定義** |
-| `gD` | 跳到**宣告** |
-| `gi` | 跳到實作 |
-| `gy` | 跳到型別定義 |
-| `gr` | 列出**所有參考**（誰用到它） |
+> **`gd` / `gr` 不需要先選字** —— LSP 查的是「游標位置」，不是「選取的文字」。
+> 游標停在名字上任何一個字母就行。`viw` 選好再按也可以（已支援 visual 模式）。
+
+| 按鍵 | 功能 | 模式 |
+|---|---|---|
+| `gd` | 跳到**定義** | n + visual |
+| `gD` | 跳到**宣告** | n + visual |
+| `gi` | 跳到實作 | n + visual |
+| `gy` | 跳到型別定義 | n + visual |
+| `gr` | 列出**所有參考** —— 本檔和其他檔**同一張清單** | n + visual |
 | `K` | 顯示說明（型別 / 函式簽章 / doxygen 註解） |
 | `gs` | 函式參數提示 |
 | `<C-k>` | 函式參數提示（**insert 模式**，打參數時用） |
@@ -160,12 +166,19 @@ nvim
 
 ### 2-4 跳轉歷史（**最重要，一定要記**）
 
+| 按鍵 | 功能 | `gd`(LSP) | `<Space>cg`(cscope) | `<C-]>`(ctags) |
+|---|---|---|---|---|
+| **`<C-o>`** | **跳回上一個位置**（連按可一路往回） | ✅ | ✅ | ✅ |
+| `<C-i>` | 再往前跳（`<C-o>` 的反向） | ✅ | ✅ | ✅ |
+| `<C-t>` | 跳回來（tag stack） | ❌ 無效 | ✅ | ✅ |
+| `:jumps` | 看完整跳轉歷史 | | | |
+
+> **只記 `<C-o>` 就好，它全部通用。**
+
 | 按鍵 | 功能 |
 |---|---|
-| `<C-o>` | 跳回上一個位置 |
-| `<C-i>` | 往前（跳回來） |
 | `<C-^>` / `<Space><Space>` | 切換上一個檔案 |
-| `` `` `` | 回到跳轉前的位置 |
+| `` `` `` | 回到跳轉前的位置（同一檔案內） |
 | `]f` / `[f` | 跳到下一個 / 上一個 **function** 開頭 |
 | `]F` / `[F` | 跳到下一個 / 上一個 function **結尾** |
 | `]b` / `[b` | 跳到下一個 / 上一個 block（`{}`） |
@@ -187,11 +200,53 @@ nvim
 
 ## 3. 大批選取
 
+### 選一個單字 ⭐ 小寫 `w` 與大寫 `W` 的差別
+
+以 `dev->ops->read(buf, len);` 游標在 `dev` 為例（實測）：
+
+| 按鍵 | 選到 | 什麼時候用 |
+|---|---|---|
+| `viw` | `dev` | 只要**變數名**（遇到 `-` `>` `(` `,` 就停） |
+| **`viW`** | `dev->ops->read(buf,` | **到空白為止**（只有空白讓它停） |
+| `vaW` | `dev->ops->read(buf, ` | 同上 + 後面空白 |
+| `ve` / `vE` | 游標到字尾 / 到「空白前」的尾 | `v3e` 一次吃 3 個字 |
+
+更多實測：
+
+| 原文 | 游標在 | `viw` | `viW` |
+|---|---|---|---|
+| `char *p_name` | `p` | `p_name` | `*p_name` |
+| `#define MAX_BUF_SIZE` | `M` | `MAX_BUF_SIZE` | `MAX_BUF_SIZE` |
+| `"hello world"` | `h` | `hello` | `"hello` |
+| `foo_bar(a, b);` | `f` | `foo_bar` | `foo_bar(a,` |
+
+**在 visual 裡繼續擴展**（取代連按方向鍵）：
+
+| 按鍵 | 效果（實測） |
+|---|---|
+| 再按 `iw` | `viw`→`dev`，`viwiw`→`dev->`，`viwiwiw`→`dev->ops` |
+| `e` / `3e` | 擴到下一個字尾 / 一次擴 3 個 |
+| `t(` / `f(` | 擴到 `(` 之前 / 含 `(` |
+| `$` / `g_` / `^` | 擴到行尾 / 行尾(不含尾端空白) / 行首 |
+
+### ⭐ 要改/刪/複製 → 不用先選
+
+`v` 只是為了「看到範圍」。目的是處理文字的話，直接 `動作 + 範圍`：
+
+| 不要這樣 | 直接這樣 |
+|---|---|
+| `viw` → `d` | **`diw`** |
+| `viw` → `c` | **`ciw`** ← 改變數名最常用 |
+| `viW` → `y` | **`yiW`** |
+| `vi(` → `d` | **`di(`** 清空參數列 |
+
+### 基本
+
 | 按鍵 | 功能 |
 |---|---|
 | `v` | 字元選取 |
 | `V` | **整行**選取 |
-| `<C-v>` | **區塊（直行）選取** — 多行同時插入/刪除同一欄 |
+| `<C-v>` | **區塊（直行）選取** — 只適合「多行同一欄」，選單一個字用小寫 `v` |
 | `<Space>a` | 全選整個檔案 |
 | `gv` | 重新選取上一次的 visual 區塊 |
 | `gV` | 選取剛剛貼上 / 修改的區塊 |
@@ -388,7 +443,29 @@ nvim
 ## 11. 常見問題
 
 **`<Space>fw` 全域搜尋沒反應 / 搜不到東西**
+→ **先確認 `:pwd`**。全域搜尋是從 nvim 的工作目錄往下找。在家目錄打
+   `nvim ~/work/proj/main.c` 會去搜整個家目錄。正確：`cd ~/work/proj` 再 `nvim`；
+   已經開著就 `:cd ~/work/proj`。
 → `ripgrep` 沒安裝。`sudo apt install ripgrep`，然後 `:checkhealth telescope` 確認。
+   注意：shell 裡打 `rg` 有反應不代表真的裝了（可能是 shell function），用 `command -v rg` 確認。
+
+**按了某個鍵完全沒反應，怎麼查**
+→ `:verbose nmap <Space>fw`（normal）/ `:verbose xmap <Space>fw`（visual）
+   —— 會說綁到什麼、在哪個檔案第幾行設的；沒綁會回 `No mapping found`。
+→ **最常見原因：那個鍵只綁了 normal 模式。**
+→ 或 `<Space>fk` 模糊搜尋所有鍵位。
+
+**`gr` 只列出當前檔案，其他檔案的參考都沒出現**
+→ **缺 `compile_commands.json`**。clangd 要有它才知道專案裡有哪些編譯單元可以建索引。
+   實測同一專案：有它 → `gr` 找到 4 筆（跨 4 檔）；只有 `compile_flags.txt` → 只 1 筆。
+→ 解法：`<Space>mb`（或終端 `mkidx`），再 `<Space>lR` 重啟 LSP。
+→ 第一次開大專案，clangd 的 background index 要跑幾秒到幾十秒，太早按會不全。
+
+**手動跑 `bear -- make`，compile_commands.json 不完整**
+→ **要先 `make clean`**。`.o` 檔還在的話 make 會說 nothing to be done，bear 攔不到東西。
+   實測沒 clean 只抓到 1 個編譯單元，clean 後抓到 3 個。
+→ 正確：`make clean && bear -- make`，或用 alias `mbc`。
+→ `<Space>mb` 和 `mkidx` 已經自動先 clean，不用自己記。
 
 **`gd` 跳不過去 / `gr` 找不到參考**
 → clangd 缺 `compile_commands.json`。在專案根目錄跑 `mkidx`（或 `<Space>mb`）。
