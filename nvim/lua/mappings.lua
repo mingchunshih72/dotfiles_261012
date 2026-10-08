@@ -150,7 +150,7 @@ m("n", "<leader>lr", vim.lsp.buf.rename, "重新命名（全專案）")
 m({ "n", "v" }, "<leader>la", vim.lsp.buf.code_action, "Code Action（快速修正）")
 m("n", "<leader>lf", function() require("conform").format { lsp_fallback = true } end, "格式化檔案")
 m("v", "<leader>lf", function() require("conform").format { lsp_fallback = true } end, "格式化選取區")
-m("n", "<leader>lh", "<cmd>ClangdSwitchSourceHeader<cr>", ".c <-> .h 切換")
+m("n", "<leader>lh", "<cmd>CSwitch<cr>", ".c <-> .h 切換")
 m("n", "<leader>lI", "<cmd>LspInfo<cr>", "LSP 狀態")
 m("n", "<leader>lR", "<cmd>LspRestart<cr>", "重啟 LSP")
 

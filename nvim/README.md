@@ -44,6 +44,7 @@ CHEATSHEET.md            ★ 快捷鍵總表
 | `:TagsBuild` | 建 `cscope.out` + `tags` |
 | `:CcJson [target]` | `bear -- make` 產生 `compile_commands.json` 並重啟 LSP |
 | `:CcFlags` | 產生 `compile_flags.txt`（沒 bear 時的後備） |
+| `:CSwitch` | `.c` ⇄ `.h` 切換（先問 clangd，失敗再用檔名規則找） |
 | `:checkhealth` | 健康檢查 |
 | `:Lazy` | 外掛管理 |
 | `:Mason` | LSP / 工具安裝 |

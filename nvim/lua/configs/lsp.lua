@@ -118,3 +118,67 @@ vim.api.nvim_create_user_command("CcFlags", function()
   vim.notify("已寫入 " .. path .. "\n" .. table.concat(incs, " "), vim.log.levels.INFO)
   vim.cmd "LspRestart"
 end, { desc = "產生 compile_flags.txt（clangd 後備方案）" })
+
+-- ════════════════════════════════════════════════════════════
+--  :CSwitch  —  .c ⇄ .h 切換
+--  （nvim-lspconfig 在 Neovim 0.11 的新 API 下不再提供
+--    :ClangdSwitchSourceHeader，所以自己實作）
+--  1. 先問 clangd 的 textDocument/switchSourceHeader
+--  2. clangd 沒回答就用檔名規則在專案裡找
+-- ════════════════════════════════════════════════════════════
+local SRC_EXT = { "c", "cc", "cpp", "cxx", "m", "mm" }
+local HDR_EXT = { "h", "hh", "hpp", "hxx" }
+
+local function switch_by_filename()
+  local path = vim.api.nvim_buf_get_name(0)
+  if path == "" then return false end
+  local stem = vim.fn.fnamemodify(path, ":r")
+  local base = vim.fn.fnamemodify(path, ":t:r")
+  local ext = vim.fn.fnamemodify(path, ":e")
+
+  local want = vim.tbl_contains(HDR_EXT, ext) and SRC_EXT or HDR_EXT
+
+  -- 1) 同目錄同名
+  for _, e in ipairs(want) do
+    local cand = stem .. "." .. e
+    if vim.fn.filereadable(cand) == 1 then
+      vim.cmd.edit(vim.fn.fnameescape(cand))
+      return true
+    end
+  end
+
+  -- 2) 專案內搜同名（include/ 與 src/ 分開放的常見結構）
+  local root = vim.fs.root(0, { "compile_commands.json", "Makefile", "CMakeLists.txt", ".git" })
+    or vim.fn.getcwd()
+  for _, e in ipairs(want) do
+    local hits = vim.fs.find(base .. "." .. e, { path = root, type = "file", limit = 5 })
+    if #hits > 0 then
+      vim.cmd.edit(vim.fn.fnameescape(hits[1]))
+      return true
+    end
+  end
+  return false
+end
+
+vim.api.nvim_create_user_command("CSwitch", function()
+  local clients = vim.lsp.get_clients { bufnr = 0, name = "clangd" }
+  if #clients > 0 then
+    local client = clients[1]
+    client:request("textDocument/switchSourceHeader", {
+      uri = vim.uri_from_bufnr(0),
+    }, function(err, result)
+      if not err and result and result ~= "" then
+        vim.cmd.edit(vim.fn.fnameescape(vim.uri_to_fname(result)))
+      elseif not switch_by_filename() then
+        vim.notify("找不到對應的 .c / .h", vim.log.levels.WARN)
+      end
+    end, 0)
+    return
+  end
+  if not switch_by_filename() then
+    vim.notify("找不到對應的 .c / .h", vim.log.levels.WARN)
+  end
+end, { desc = ".c <-> .h 切換" })
+
+-- 保留舊名稱當別名，免得習慣改不過來
+vim.api.nvim_create_user_command("ClangdSwitchSourceHeader", "CSwitch", { desc = ".c <-> .h 切換" })

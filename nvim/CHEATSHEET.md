@@ -122,7 +122,7 @@ nvim
 | `<Space>lr` | 重新命名（跨檔） |
 | `<Space>la` | Code Action（快速修正、加 include…） |
 | `<Space>lf` | 格式化（clang-format） |
-| `<Space>lh` | `.c` ⇄ `.h` 切換 |
+| `<Space>lh` | `.c` ⇄ `.h` 切換（`:CSwitch`，支援 `src/` 與 `include/` 分開放的結構） |
 | `<Space>lI` | LSP 狀態（`:LspInfo`） |
 | `<Space>lR` | 重啟 LSP |
 
