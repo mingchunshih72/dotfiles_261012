@@ -90,14 +90,40 @@ m("n", "<leader>fz", "<cmd>Telescope current_buffer_fuzzy_find<cr>", "本檔模�
 m("n", "*", "*zzzv", "搜尋游標下的字（往下）")
 m("n", "#", "#zzzv", "搜尋游標下的字（往上）")
 
+-- ── 取得 visual 模式選取的文字（不破壞你的剪貼簿）──────
+local function visual_text()
+  local save, savetype = vim.fn.getreg "z", vim.fn.getregtype "z"
+  vim.cmd 'noautocmd silent normal! "zy'
+  local txt = vim.fn.getreg "z"
+  vim.fn.setreg("z", save, savetype)
+  -- 多行選取只取第一行，並去掉前後空白
+  txt = (txt:gsub("\n.*$", "")):gsub("^%s+", ""):gsub("%s+$", "")
+  return txt
+end
+
 -- ── 全域（整個專案，需要 ripgrep） ──
+-- fw = 即時搜尋（可以邊打邊改關鍵字）  fW = 固定搜游標下／選取的字
+-- visual 模式下兩個都吃「選取的文字」，不用去記大小寫
 m("n", "<leader>fw", "<cmd>Telescope live_grep<cr>", "全域即時搜尋")
 m("n", "<leader>fW", "<cmd>Telescope grep_string<cr>", "全域搜尋游標下的字")
-m("v", "<leader>fW", function()
-  vim.cmd 'noau normal! "vy'
-  local sel = vim.fn.getreg "v"
+
+m("x", "<leader>fw", function()
+  local sel = visual_text()
+  if sel == "" then return vim.cmd "Telescope live_grep" end
+  require("telescope.builtin").live_grep { default_text = sel }
+end, "全域搜尋選取文字（可再改關鍵字）")
+
+m("x", "<leader>fW", function()
+  local sel = visual_text()
+  if sel == "" then return end
   require("telescope.builtin").grep_string { search = sel }
 end, "全域搜尋選取文字")
+
+-- 本檔模糊搜尋選取的文字
+m("x", "<leader>fz", function()
+  local sel = visual_text()
+  require("telescope.builtin").current_buffer_fuzzy_find { default_text = sel }
+end, "本檔搜尋選取文字")
 
 -- :grep 直接進 quickfix（大量結果時比 telescope 好用）
 m("n", "<leader>fG", function()
